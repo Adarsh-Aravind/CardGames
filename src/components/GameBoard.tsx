@@ -40,7 +40,7 @@ export function GameBoard() {
   };
 
   const handleCopyLink = () => {
-    const link = `${window.location.origin}?room=${room.id}`;
+    const link = new URL(`${import.meta.env.BASE_URL}?room=${room.id}`, window.location.origin).href;
     navigator.clipboard.writeText(link).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
