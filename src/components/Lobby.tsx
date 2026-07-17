@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useGameStore } from '../store/useGameStore';
 import { Users, Moon, Sun } from 'lucide-react';
 import { Card } from './Card';
