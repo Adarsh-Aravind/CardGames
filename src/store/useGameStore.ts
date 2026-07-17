@@ -26,6 +26,7 @@ export type ConnectionStatus = 'idle' | 'connecting' | 'connected';
 
 export type Room = {
   id: string;
+  hostId: string;
   players: Player[];
   currentBlackCard: BlackCard | null;
   czarId: string;
@@ -43,8 +44,10 @@ type GameState = {
   isDarkMode: boolean;
   connectionStatus: ConnectionStatus;
   roundWinner: { winnerName: string; winningCards: string[] } | null;
+  notice: string | null;
 
   acceptWarning: () => void;
+  dismissNotice: () => void;
   toggleDarkMode: () => void;
   setPlayerName: (name: string) => void;
   initSocket: () => void;
@@ -55,6 +58,7 @@ type GameState = {
   pickWinner: (submission: any) => void;
   addBot: () => Promise<{ success: boolean; message?: string }>;
   removeBot: (botId: string) => void;
+  leaveRoom: () => void;
 };
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -66,8 +70,11 @@ export const useGameStore = create<GameState>((set, get) => ({
   isDarkMode: true,
   connectionStatus: 'idle',
   roundWinner: null,
+  notice: null,
 
   acceptWarning: () => set({ is18PlusAccepted: true }),
+
+  dismissNotice: () => set({ notice: null }),
   
   toggleDarkMode: () => set((state) => ({ isDarkMode: !state.isDarkMode })),
 
@@ -98,6 +105,17 @@ export const useGameStore = create<GameState>((set, get) => ({
     socket.on('round_winner', (data) => {
       set({ roundWinner: data });
       setTimeout(() => set({ roundWinner: null }), 3000);
+    });
+
+    // The server closed the room (host left). Drop back to the lobby and tell
+    // the player why, rather than leaving them on a dead board.
+    socket.on('room_closed', (data: { reason?: string }) => {
+      set({
+        room: null,
+        hand: [],
+        roundWinner: null,
+        notice: data?.reason || 'The room was closed.',
+      });
     });
 
     set({ socket });
@@ -163,5 +181,15 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (socket && room) {
       socket.emit('remove_bot', { roomId: room.id, botId });
     }
+  },
+
+  leaveRoom: () => {
+    const { socket, room } = get();
+    if (!socket || !room) return;
+
+    socket.emit('leave_room', { roomId: room.id });
+    // Reset locally right away instead of waiting for the ack — the host's own
+    // 'room_closed' broadcast may race with their socket leaving the room.
+    set({ room: null, hand: [], roundWinner: null });
   },
 }));

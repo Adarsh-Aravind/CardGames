@@ -1,19 +1,20 @@
 import { useState } from 'react';
 import { useGameStore } from '../store/useGameStore';
 import { Card } from './Card';
-import { Trophy, Crown, Check, Copy, CheckCircle2, Play, Bot, Plus, X } from 'lucide-react';
+import { Trophy, Crown, Check, Copy, CheckCircle2, Play, Bot, Plus, X, LogOut } from 'lucide-react';
 
 export function GameBoard() {
-  const { room, hand, socket, submitCard, pickWinner, roundWinner, addBot, removeBot } = useGameStore();
+  const { room, hand, socket, submitCard, pickWinner, roundWinner, addBot, removeBot, leaveRoom } = useGameStore();
   const [selectedCards, setSelectedCards] = useState<number[]>([]);
   const [copied, setCopied] = useState(false);
   const [addingBot, setAddingBot] = useState(false);
   const [botError, setBotError] = useState('');
+  const [confirmingLeave, setConfirmingLeave] = useState(false);
 
   if (!room || !socket) return null;
 
   const isCzar = room.czarId === socket.id;
-  const isHost = room.players[0]?.id === socket.id;
+  const isHost = room.hostId === socket.id;
   const botCount = room.players.filter(p => p.isBot).length;
 
   const handleAddBot = async () => {
@@ -62,6 +63,36 @@ export function GameBoard() {
 
   return (
     <div className="min-h-screen p-4 sm:p-8 flex flex-col font-sans">
+      {confirmingLeave && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy/60 backdrop-blur-sm animate-fade-in-up">
+          <div className="panel p-6 max-w-sm w-full animate-pop-in">
+            <h3 className="text-xl font-black text-navy dark:text-mint mb-2">
+              {isHost ? 'End the game?' : 'Leave the game?'}
+            </h3>
+            <p className="text-sm font-medium text-navy/70 dark:text-mint/60 leading-relaxed mb-5">
+              {isHost
+                ? 'You are the host — leaving closes the room for everyone.'
+                : 'You can rejoin with the room code as long as the game is still running.'}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmingLeave(false)}
+                className="btn-ghost flex-1 py-2.5"
+              >
+                Stay
+              </button>
+              <button
+                onClick={leaveRoom}
+                className="flex-1 py-2.5 rounded-xl font-black bg-red-500 text-white hover:bg-red-600 transition-colors flex items-center justify-center gap-2"
+              >
+                <LogOut size={18} />
+                {isHost ? 'End Game' : 'Leave'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-8 animate-fade-in-up">
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center w-full md:w-auto">
@@ -75,6 +106,13 @@ export function GameBoard() {
           >
             {copied ? <CheckCircle2 size={18} className="text-jade" /> : <Copy size={18} />}
             {copied ? 'Copied!' : 'Copy Invite Link'}
+          </button>
+          <button
+            onClick={() => setConfirmingLeave(true)}
+            className="btn-ghost px-4 py-2.5 flex items-center justify-center gap-2 w-full sm:w-auto flex-shrink-0 text-sm border-red-400/40 text-red-500 dark:text-red-400 hover:bg-red-500/10"
+          >
+            <LogOut size={18} />
+            {isHost ? 'End Game' : 'Leave'}
           </button>
         </div>
 
@@ -121,7 +159,7 @@ export function GameBoard() {
                       <div className="min-w-0">
                         <span className="font-black text-navy dark:text-mint truncate block">
                           {p.name}
-                          {i === 0 && <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-teal dark:text-spring">Host</span>}
+                          {p.id === room.hostId && <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-teal dark:text-spring">Host</span>}
                         </span>
                         {p.blurb && (
                           <span className="text-xs font-medium text-navy/50 dark:text-mint/40">{p.blurb}</span>

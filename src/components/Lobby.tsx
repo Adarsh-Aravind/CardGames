@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useGameStore } from '../store/useGameStore';
-import { Users, Moon, Sun, Sparkles, LogIn } from 'lucide-react';
+import { Users, Moon, Sun, Sparkles, LogIn, Info, X } from 'lucide-react';
 import { Card } from './Card';
 
 export function Lobby() {
-  const { playerName, setPlayerName, createRoom, joinRoom, isDarkMode, toggleDarkMode } = useGameStore();
+  const { playerName, setPlayerName, createRoom, joinRoom, isDarkMode, toggleDarkMode, notice, dismissNotice } = useGameStore();
   const [roomCode, setRoomCode] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -85,6 +85,22 @@ export function Lobby() {
         </div>
 
         <div className="panel p-6 sm:p-8">
+          {notice && (
+            <div className="mb-6 p-4 rounded-xl border-2 border-teal/40 bg-teal/10 flex items-start gap-3 animate-pop-in">
+              <Info className="text-teal dark:text-jade flex-shrink-0 mt-0.5" size={20} />
+              <p className="flex-1 text-sm font-bold text-navy dark:text-mint leading-relaxed">
+                {notice}
+              </p>
+              <button
+                onClick={dismissNotice}
+                aria-label="Dismiss"
+                className="p-1 rounded-lg text-navy/40 dark:text-mint/40 hover:text-navy dark:hover:text-mint transition-colors flex-shrink-0"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          )}
+
           {inviteCode && (
             <div className="mb-6 p-4 rounded-xl border-2 border-spring/50 bg-spring/15 text-center animate-pop-in">
               <p className="font-black text-navy dark:text-mint">

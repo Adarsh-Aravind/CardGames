@@ -30,6 +30,7 @@ const rooms = {};
 /*
 room format: {
   id: string,
+  hostId: string,
   players: [ { id, name, score, hand: [] } ],
   blackCardsDeck: [],
   whiteCardsDeck: [],
@@ -54,6 +55,7 @@ function getSafeRoomData(room) {
   if (!room) return null;
   return {
     id: room.id,
+    hostId: room.hostId,
     // hide hands from others
     players: room.players.map(p => ({
       id: p.id,
@@ -84,6 +86,75 @@ function sendRoomUpdate(roomId) {
   room.players.forEach(p => {
     io.to(p.id).emit('hand_update', p.hand);
   });
+}
+
+function closeRoom(roomId, reason) {
+  const room = rooms[roomId];
+  if (!room) return;
+
+  delete rooms[roomId];
+  io.to(roomId).emit('room_closed', { reason });
+  io.socketsLeave(roomId);
+}
+
+/**
+ * The single exit path for a human player, used by both the Leave button and a
+ * dropped connection so that quitting deliberately and closing the tab behave
+ * identically. The host leaving ends the game for everyone.
+ */
+function removePlayer(roomId, playerId) {
+  const room = rooms[roomId];
+  if (!room) return;
+
+  const index = room.players.findIndex(p => p.id === playerId);
+  if (index === -1) return;
+
+  if (room.hostId === playerId) {
+    closeRoom(roomId, 'The host left, so the game has ended.');
+    return;
+  }
+
+  const czarId = room.players[room.czarIndex]?.id;
+  room.players.splice(index, 1);
+  room.submissions = room.submissions.filter(s => s.playerId !== playerId);
+
+  // Bots alone can't hold a room open — without this, any room that ever had a
+  // bot added would leak for the lifetime of the process.
+  if (!room.players.some(p => !p.isBot)) {
+    delete rooms[roomId];
+    return;
+  }
+
+  // A round needs a Czar plus someone to play against it. Falling back to the
+  // lobby leaves the host somewhere they can act from (add a computer, wait for
+  // people) instead of stranding them on a board that can never resolve.
+  if (room.players.length < 2 && room.state !== 'lobby') {
+    room.state = 'lobby';
+    room.submissions = [];
+    room.currentBlackCard = null;
+    room.czarIndex = 0;
+    sendRoomUpdate(roomId);
+    return;
+  }
+
+  // Keep the same person as Czar across the removal — splicing shifts every
+  // index after the leaver, so a positional czarIndex would silently hand the
+  // crown to someone else. If the Czar is the one who left, the turn passes to
+  // whoever was next in order.
+  const czarIndex = room.players.findIndex(p => p.id === czarId);
+  room.czarIndex = czarIndex !== -1 ? czarIndex : index % room.players.length;
+
+  // The leaver may have been the last player everyone was waiting on.
+  if (
+    room.state === 'playing' &&
+    room.currentBlackCard &&
+    room.submissions.length === room.players.length - 1
+  ) {
+    room.state = 'czar_picking';
+  }
+
+  sendRoomUpdate(roomId);
+  scheduleBotTurns(roomId);
 }
 
 function dealCards(room) {
@@ -223,6 +294,7 @@ io.on('connection', (socket) => {
     const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
     rooms[roomId] = {
       id: roomId,
+      hostId: socket.id,
       players: [{ id: socket.id, name: playerName, score: 0, hand: [] }],
       blackCardsDeck: shuffle([...allBlackCards]),
       whiteCardsDeck: shuffle([...allWhiteCards]),
@@ -258,7 +330,7 @@ io.on('connection', (socket) => {
 
   socket.on('start_game', (roomId) => {
     const room = rooms[roomId];
-    if (!room || room.players[0].id !== socket.id) return; // Only creator can start
+    if (!room || room.hostId !== socket.id) return; // Only the host can start
 
     if (room.players.length < 2) return; // Need at least 2 players
 
@@ -274,7 +346,7 @@ io.on('connection', (socket) => {
   socket.on('add_bot', ({ roomId }, callback) => {
     const room = rooms[roomId];
     if (!room) return callback?.({ success: false, message: 'Room not found' });
-    if (room.players[0]?.id !== socket.id) {
+    if (room.hostId !== socket.id) {
       return callback?.({ success: false, message: 'Only the host can add a computer' });
     }
     if (room.players.filter(p => p.isBot).length >= MAX_BOTS) {
@@ -296,7 +368,7 @@ io.on('connection', (socket) => {
   socket.on('remove_bot', ({ roomId, botId }, callback) => {
     const room = rooms[roomId];
     if (!room) return callback?.({ success: false, message: 'Room not found' });
-    if (room.players[0]?.id !== socket.id) {
+    if (room.hostId !== socket.id) {
       return callback?.({ success: false, message: 'Only the host can remove a computer' });
     }
 
@@ -328,42 +400,18 @@ io.on('connection', (socket) => {
     applyPickWinner(roomId, submission);
   });
 
+  socket.on('leave_room', ({ roomId }, callback) => {
+    // Leave the socket.io room first so the leaver doesn't receive their own
+    // 'room_closed' broadcast when they're the host.
+    socket.leave(roomId);
+    removePlayer(roomId, socket.id);
+    callback?.({ success: true });
+  });
+
   socket.on('disconnect', () => {
     console.log(`User disconnected: ${socket.id}`);
-    // Clean up rooms where player was present
     for (const roomId in rooms) {
-      const room = rooms[roomId];
-      const pIndex = room.players.findIndex(p => p.id === socket.id);
-      if (pIndex !== -1) {
-        room.players.splice(pIndex, 1);
-        room.submissions = room.submissions.filter(s => s.playerId !== socket.id);
-
-        // Bots alone can't hold a room open — without this, any room that ever
-        // had a bot added would leak for the lifetime of the process.
-        const humansLeft = room.players.some(p => !p.isBot);
-        if (!humansLeft) {
-          delete rooms[roomId];
-          continue;
-        }
-
-        // Adjust czar index if necessary
-        if (room.czarIndex >= room.players.length) {
-          room.czarIndex = 0;
-        }
-
-        // The leaver may have been the last player everyone was waiting on.
-        if (
-          room.state === 'playing' &&
-          room.currentBlackCard &&
-          room.players.length > 1 &&
-          room.submissions.length === room.players.length - 1
-        ) {
-          room.state = 'czar_picking';
-        }
-
-        sendRoomUpdate(roomId);
-        scheduleBotTurns(roomId);
-      }
+      removePlayer(roomId, socket.id);
     }
   });
 });
