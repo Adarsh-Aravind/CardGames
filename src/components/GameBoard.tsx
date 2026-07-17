@@ -1,16 +1,29 @@
 import { useState } from 'react';
 import { useGameStore } from '../store/useGameStore';
 import { Card } from './Card';
-import { Trophy, Crown, Check, Copy, CheckCircle2, Play } from 'lucide-react';
+import { Trophy, Crown, Check, Copy, CheckCircle2, Play, Bot, Plus, X } from 'lucide-react';
 
 export function GameBoard() {
-  const { room, hand, socket, submitCard, pickWinner, roundWinner } = useGameStore();
+  const { room, hand, socket, submitCard, pickWinner, roundWinner, addBot, removeBot } = useGameStore();
   const [selectedCards, setSelectedCards] = useState<number[]>([]);
   const [copied, setCopied] = useState(false);
+  const [addingBot, setAddingBot] = useState(false);
+  const [botError, setBotError] = useState('');
 
   if (!room || !socket) return null;
 
   const isCzar = room.czarId === socket.id;
+  const isHost = room.players[0]?.id === socket.id;
+  const botCount = room.players.filter(p => p.isBot).length;
+
+  const handleAddBot = async () => {
+    setBotError('');
+    setAddingBot(true);
+    const result = await addBot();
+    if (!result.success) setBotError(result.message || 'Could not add a computer');
+    setAddingBot(false);
+  };
+
   const isPlaying = room.state === 'playing';
   const isCzarPicking = room.state === 'czar_picking';
 
@@ -70,6 +83,7 @@ export function GameBoard() {
           {room.players.map(p => (
             <div key={p.id} className="flex flex-col items-center flex-shrink-0">
               <span className="font-bold flex items-center gap-1 text-sm text-navy dark:text-mint whitespace-nowrap">
+                {p.isBot && <Bot size={13} className="text-jade" />}
                 {p.name}
                 {p.id === room.czarId && <Crown size={14} className="text-spring animate-float" />}
               </span>
@@ -82,7 +96,7 @@ export function GameBoard() {
       {/* Main play area */}
       <div className="flex-1 flex flex-col items-center">
         {room.state === 'lobby' ? (
-          <div className="text-center animate-fade-in-up mt-16">
+          <div className="w-full max-w-lg animate-fade-in-up mt-12">
             <h2 className="text-2xl sm:text-3xl font-black mb-2 flex items-center justify-center gap-2 text-navy dark:text-mint">
               Waiting for players
               <span className="flex space-x-1">
@@ -91,16 +105,87 @@ export function GameBoard() {
                 <span className="w-2 h-2 bg-jade rounded-full animate-bounce" />
               </span>
             </h2>
-            <p className="font-medium text-navy/60 dark:text-mint/50 mb-8">
-              Share the invite link — you need at least 3 players.
+            <p className="font-medium text-navy/60 dark:text-mint/50 mb-6 text-center">
+              Share the invite link to bring people in.
             </p>
-            {room.players[0].id === socket.id && (
-              <button
-                onClick={() => socket.emit('start_game', room.id)}
-                className="btn-primary text-lg sm:text-xl py-4 px-10 sm:px-14 inline-flex items-center gap-2 animate-glow-pulse"
-              >
-                <Play size={22} /> Start Game
-              </button>
+
+            {/* Who's here */}
+            <div className="panel p-4 mb-4">
+              <ul className="divide-y divide-navy/10 dark:divide-mint/10">
+                {room.players.map((p, i) => (
+                  <li key={p.id} className="flex items-center justify-between py-2.5 animate-pop-in" style={{ animationDelay: `${i * 0.05}s` }}>
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      {p.isBot
+                        ? <Bot size={18} className="text-jade flex-shrink-0" />
+                        : <div className="w-2 h-2 rounded-full bg-spring flex-shrink-0" />}
+                      <div className="min-w-0">
+                        <span className="font-black text-navy dark:text-mint truncate block">
+                          {p.name}
+                          {i === 0 && <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-teal dark:text-spring">Host</span>}
+                        </span>
+                        {p.blurb && (
+                          <span className="text-xs font-medium text-navy/50 dark:text-mint/40">{p.blurb}</span>
+                        )}
+                      </div>
+                    </div>
+                    {p.isBot && isHost && (
+                      <button
+                        onClick={() => removeBot(p.id)}
+                        aria-label={`Remove ${p.name}`}
+                        className="p-1.5 rounded-lg text-navy/40 dark:text-mint/40 hover:text-red-500 hover:bg-red-500/10 transition-colors flex-shrink-0"
+                      >
+                        <X size={16} />
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* The nudge: two players means the Czar picks from a single card. */}
+            {isHost && room.players.length < 3 && (
+              <div className="mb-4 p-4 rounded-xl border-2 border-spring/50 bg-spring/10 animate-pop-in">
+                <div className="flex gap-3">
+                  <Bot className="text-teal dark:text-spring flex-shrink-0 mt-0.5 animate-float" size={22} />
+                  <div className="min-w-0">
+                    <p className="font-black text-navy dark:text-mint text-sm uppercase tracking-wide">
+                      Only {room.players.length}? Add a computer.
+                    </p>
+                    <p className="mt-1.5 text-sm font-medium text-navy/70 dark:text-mint/60 leading-relaxed">
+                      With two players the Czar only ever has one card to choose
+                      from — there's no real contest. A computer player gives you
+                      something to actually beat.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {botError && (
+              <div className="mb-4 rounded-xl border-2 border-red-400/50 bg-red-500/10 p-3 font-bold text-sm text-red-600 dark:text-red-300 animate-pop-in">
+                {botError}
+              </div>
+            )}
+
+            {isHost && (
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={handleAddBot}
+                  disabled={addingBot || botCount >= 4}
+                  className={`btn-ghost py-3 px-5 flex items-center justify-center gap-2 flex-shrink-0 ${
+                    room.players.length < 3 ? 'border-spring/60 animate-glow-pulse' : ''
+                  }`}
+                >
+                  <Plus size={18} /> {addingBot ? 'Adding…' : 'Add Computer'}
+                </button>
+                <button
+                  onClick={() => socket.emit('start_game', room.id)}
+                  disabled={room.players.length < 2}
+                  className="btn-primary text-lg py-3 px-8 flex-1 inline-flex items-center justify-center gap-2"
+                >
+                  <Play size={20} /> Start Game
+                </button>
+              </div>
             )}
           </div>
         ) : (

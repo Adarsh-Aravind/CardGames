@@ -7,6 +7,8 @@ export type Player = {
   id: string;
   name: string;
   score: number;
+  isBot?: boolean;
+  blurb?: string | null;
 };
 
 export type BlackCard = {
@@ -51,6 +53,8 @@ type GameState = {
   startGame: () => void;
   submitCard: (cardIndices: number[]) => void;
   pickWinner: (submission: any) => void;
+  addBot: () => Promise<{ success: boolean; message?: string }>;
+  removeBot: (botId: string) => void;
 };
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -141,5 +145,23 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (socket && room) {
       socket.emit('pick_winner', { roomId: room.id, submission });
     }
-  }
+  },
+
+  addBot: () => {
+    return new Promise((resolve) => {
+      const { socket, room } = get();
+      if (!socket || !room) return resolve({ success: false, message: 'Not in a room' });
+
+      socket.emit('add_bot', { roomId: room.id }, (response: any) =>
+        resolve(response ?? { success: false }),
+      );
+    });
+  },
+
+  removeBot: (botId) => {
+    const { socket, room } = get();
+    if (socket && room) {
+      socket.emit('remove_bot', { roomId: room.id, botId });
+    }
+  },
 }));

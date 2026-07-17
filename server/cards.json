@@ -99,6 +99,146 @@
     {
       "text": "I got 99 problems but _______ ain't one.",
       "pick": 1
+    },
+    {
+      "text": "The new HR policy strictly forbids _______.",
+      "pick": 1
+    },
+    {
+      "text": "My therapist says I'll never heal until I confront _______.",
+      "pick": 1
+    },
+    {
+      "text": "Nothing ruins a funeral quite like _______.",
+      "pick": 1
+    },
+    {
+      "text": "Netflix cancelled my favourite show to make room for _______.",
+      "pick": 1
+    },
+    {
+      "text": "Six days sober, and I owe it all to _______.",
+      "pick": 1
+    },
+    {
+      "text": "Local man arrested after police found _______ in his garage.",
+      "pick": 1
+    },
+    {
+      "text": "The secret ingredient in Grandma's stew is _______.",
+      "pick": 1
+    },
+    {
+      "text": "Officer, I can explain. This is _______.",
+      "pick": 1
+    },
+    {
+      "text": "In 200 years, historians will remember our entire generation for _______.",
+      "pick": 1
+    },
+    {
+      "text": "Step one: _______. Step two: _______. Step three: profit.",
+      "pick": 2
+    },
+    {
+      "text": "My last words are going to be _______.",
+      "pick": 1
+    },
+    {
+      "text": "The zoo closed early after _______ got into the penguin enclosure.",
+      "pick": 1
+    },
+    {
+      "text": "What finally got me removed from the group chat?",
+      "pick": 1
+    },
+    {
+      "text": "I'm not saying it was _______, but it was definitely _______.",
+      "pick": 2
+    },
+    {
+      "text": "The wedding was perfect until the best man brought up _______.",
+      "pick": 1
+    },
+    {
+      "text": "Every single night, I dream about _______.",
+      "pick": 1
+    },
+    {
+      "text": "The new Pope's first official act was legalising _______.",
+      "pick": 1
+    },
+    {
+      "text": "Whatever you do, do not microwave _______.",
+      "pick": 1
+    },
+    {
+      "text": "This Christmas, nothing says 'I love you' like _______.",
+      "pick": 1
+    },
+    {
+      "text": "The job interview was going great until they asked about _______.",
+      "pick": 1
+    },
+    {
+      "text": "Scientists have now confirmed that _______ is caused entirely by _______.",
+      "pick": 2
+    },
+    {
+      "text": "My entire dating profile is just a photograph of _______.",
+      "pick": 1
+    },
+    {
+      "text": "The cult seemed pretty reasonable right up until _______.",
+      "pick": 1
+    },
+    {
+      "text": "What's my toxic trait? _______.",
+      "pick": 1
+    },
+    {
+      "text": "I lost the security deposit because of _______.",
+      "pick": 1
+    },
+    {
+      "text": "The airline lost my luggage. Inside was _______.",
+      "pick": 1
+    },
+    {
+      "text": "What woke the entire street at 3 a.m.?",
+      "pick": 1
+    },
+    {
+      "text": "Turns out the meaning of life was _______ the whole time.",
+      "pick": 1
+    },
+    {
+      "text": "The surgeon went pale when the X-ray revealed _______.",
+      "pick": 1
+    },
+    {
+      "text": "I would absolutely sell my soul for _______.",
+      "pick": 1
+    },
+    {
+      "text": "Banned from the aquarium for _______.",
+      "pick": 1
+    },
+    {
+      "text": "My autobiography is called '_______', and the sequel is '_______'.",
+      "pick": 2
+    },
+    {
+      "text": "The group project fell apart because of _______.",
+      "pick": 1
+    },
+    {
+      "text": "You've reached the voicemail of a man who has given up on _______.",
+      "pick": 1
+    },
+    {
+      "text": "The village elders warned us about _______.",
+      "pick": 1
     }
   ],
   "whiteCards": [
@@ -179,6 +319,131 @@
     "Your weird brother.",
     "Birth control.",
     "Nasty shit, like real sick stuff.",
-    "An erection that lasts longer than four hours."
+    "An erection that lasts longer than four hours.",
+    "A haunted Roomba.",
+    "Emotional damage.",
+    "My dad's browser history.",
+    "Aggressive eye contact.",
+    "The concept of Tuesday.",
+    "A goose with a knife.",
+    "Unpaid overtime.",
+    "Screaming into a bucket.",
+    "A slightly damp handshake.",
+    "Crying in the supermarket car park.",
+    "Three raccoons in a trench coat.",
+    "The last honest man in Ohio.",
+    "A tax return filed purely out of spite.",
+    "The sound my knees make now.",
+    "Explaining cryptocurrency to a dying man.",
+    "A clown. A real one.",
+    "Deleting the group chat and moving abroad.",
+    "One (1) haunted doll.",
+    "Peaking in Year 9.",
+    "A man who owns exactly one book.",
+    "Whatever is in the office fridge.",
+    "Lying to a dog.",
+    "The horrors.",
+    "Weaponised incompetence.",
+    "A pigeon that knows what it did.",
+    "Sixteen consecutive energy drinks.",
+    "Being normal about it.",
+    "The smell of a hospital.",
+    "An unskippable ad before my own funeral.",
+    "Getting absolutely rinsed by a child.",
+    "A wizard with unclear motives.",
+    "My will to live, sold on eBay.",
+    "Perfectly legal, deeply upsetting.",
+    "A group chat named 'do not add Steve'.",
+    "The unspoken thing at Christmas dinner.",
+    "Beans. Simply beans.",
+    "Sweating through a job interview.",
+    "A stranger's tooth.",
+    "Making it everyone else's problem.",
+    "The gentle click of a bone.",
+    "Losing an argument to a toaster.",
+    "My sleep paralysis demon, and his opinions.",
+    "A firmly worded letter to God.",
+    "Dying, but as a bit.",
+    "Uncomfortably long eye contact with a horse.",
+    "Being the reason there's a new rule.",
+    "A birthday party nobody came to.",
+    "The final season.",
+    "Kissing your mate's dad by accident.",
+    "A haunted vape.",
+    "Confidently wrong.",
+    "Chugging the bathwater.",
+    "Whatever this is.",
+    "A man screaming about pigeons at the bus stop.",
+    "Two hundred unread emails.",
+    "The concept of a landlord.",
+    "Sincerely, a coward.",
+    "My entire personality.",
+    "Going feral in a Wetherspoons.",
+    "A cursed sandwich.",
+    "The moment the anaesthetic wears off.",
+    "Absolutely nobody's first choice.",
+    "A slow, wet cough.",
+    "Being perceived.",
+    "An unlicensed dentist.",
+    "The thing under the decking.",
+    "Getting cocky.",
+    "A goth with a full-time job.",
+    "The last chicken nugget.",
+    "Someone else's divorce.",
+    "Yelling at a printer until it works.",
+    "A dad who left for milk in 2009.",
+    "Reheated fish, in an open-plan office.",
+    "An extremely specific fear of moths.",
+    "Being wanted by three separate councils.",
+    "The vibes. They were off.",
+    "A man with no thoughts.",
+    "Passive aggression, but make it art.",
+    "Blacking out at a christening.",
+    "The horrible little guy inside my head.",
+    "One thousand bees, but they're friendly.",
+    "A funeral, but everyone's on their phone.",
+    "Failing upwards.",
+    "The unrelenting passage of time.",
+    "A stag do in Prague.",
+    "My skeleton, wanting out.",
+    "Getting emotional about a train.",
+    "Whatever the dog found.",
+    "An apology written by a lawyer.",
+    "A séance that got out of hand.",
+    "Peeing in a bottle to save time.",
+    "The council estate Illuminati.",
+    "Deeply unserious behaviour.",
+    "A man who's read one Wikipedia article.",
+    "Screaming, but politely.",
+    "The sheer audacity.",
+    "A haunted PlayStation 2.",
+    "Being a menace.",
+    "Nan, at a rave.",
+    "The bit where it goes wrong.",
+    "A completely undiagnosed condition.",
+    "Fully clothed in the shower.",
+    "A man selling meat from a van.",
+    "The exact opposite of consent from a cat.",
+    "Emotionally investing in a video game character.",
+    "A brick, thrown with intent.",
+    "The way he looked at the cheese.",
+    "Kicking off in a Greggs.",
+    "My mother's disappointment, bottled.",
+    "Being extremely normal about a celebrity.",
+    "A dream where you turn up naked to the exam.",
+    "Something wet in the post.",
+    "The lads. The absolute lads.",
+    "A confidently incorrect satnav.",
+    "Getting barred for life.",
+    "The gnawing dread.",
+    "A man who claps when the plane lands.",
+    "Ruining it for everyone.",
+    "One sock, always damp.",
+    "A very small horse with a very big attitude.",
+    "Whatever happened in Ibiza.",
+    "The last two people on a dance floor.",
+    "An aggressively loud crisp packet.",
+    "Being emotionally destroyed by an advert.",
+    "A goblin, legally speaking."
   ]
 }
