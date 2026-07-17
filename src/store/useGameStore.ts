@@ -14,6 +14,14 @@ export type BlackCard = {
   pick: number;
 };
 
+/**
+ * 'connecting' covers the Render free-tier cold start: the service spins down
+ * when idle, so the first handshake can fail repeatedly for ~30-60s while it
+ * boots. socket.io retries on its own, so we stay in 'connecting' rather than
+ * surfacing each failed attempt as an error.
+ */
+export type ConnectionStatus = 'idle' | 'connecting' | 'connected';
+
 export type Room = {
   id: string;
   players: Player[];
@@ -31,8 +39,9 @@ type GameState = {
   hand: string[];
   is18PlusAccepted: boolean;
   isDarkMode: boolean;
+  connectionStatus: ConnectionStatus;
   roundWinner: { winnerName: string; winningCards: string[] } | null;
-  
+
   acceptWarning: () => void;
   toggleDarkMode: () => void;
   setPlayerName: (name: string) => void;
@@ -50,7 +59,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   room: null,
   hand: [],
   is18PlusAccepted: false,
-  isDarkMode: false,
+  isDarkMode: true,
+  connectionStatus: 'idle',
   roundWinner: null,
 
   acceptWarning: () => set({ is18PlusAccepted: true }),
@@ -60,8 +70,19 @@ export const useGameStore = create<GameState>((set, get) => ({
   setPlayerName: (name) => set({ playerName: name }),
 
   initSocket: () => {
-    const socket = io(SOCKET_URL);
-    
+    if (get().socket) return;
+
+    set({ connectionStatus: 'connecting' });
+    const socket = io(SOCKET_URL, {
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 4000,
+      timeout: 10000,
+    });
+
+    socket.on('connect', () => set({ connectionStatus: 'connected' }));
+    socket.on('disconnect', () => set({ connectionStatus: 'connecting' }));
+    socket.on('connect_error', () => set({ connectionStatus: 'connecting' }));
+
     socket.on('room_update', (roomData) => {
       set({ room: roomData });
     });

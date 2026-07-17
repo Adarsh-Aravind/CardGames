@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
 import { useGameStore } from './store/useGameStore';
 import { WarningModal } from './components/WarningModal';
+import { BootScreen } from './components/BootScreen';
 import { Lobby } from './components/Lobby';
 import { GameBoard } from './components/GameBoard';
 
 function App() {
-  const { is18PlusAccepted, room, initSocket, socket, isDarkMode } = useGameStore();
+  const { is18PlusAccepted, room, initSocket, socket, isDarkMode, connectionStatus } = useGameStore();
 
   useEffect(() => {
     if (is18PlusAccepted && !socket) {
@@ -13,14 +14,20 @@ function App() {
     }
   }, [is18PlusAccepted, socket, initSocket]);
 
+  const isConnected = connectionStatus === 'connected';
+
   return (
-    <div className={`min-h-screen font-sans ${isDarkMode ? 'dark' : ''}`}>
-      <div className="dark:bg-neutral-900 bg-neutral-100 min-h-screen text-black dark:text-white transition-colors duration-300">
+    <div className={isDarkMode ? 'dark' : ''}>
+      <div className="app-surface min-h-screen font-sans transition-colors duration-300">
         {!is18PlusAccepted && <WarningModal />}
-        
-        {/* The main app rendered underneath the warning modal if not accepted */}
-        <div className={!is18PlusAccepted ? "pointer-events-none filter blur-sm select-none" : ""}>
-          {!room ? <Lobby /> : <GameBoard />}
+
+        {/* Lobby sits blurred behind the warning until it's accepted. */}
+        <div className={!is18PlusAccepted ? 'pointer-events-none filter blur-sm select-none' : ''}>
+          {!is18PlusAccepted || isConnected ? (
+            !room ? <Lobby /> : <GameBoard />
+          ) : (
+            <BootScreen />
+          )}
         </div>
       </div>
     </div>
