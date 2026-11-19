@@ -1,54 +1,82 @@
-# Cards Against Humanity - Web Edition
+# CardGames
 
-A multiplayer "Cards Against Humanity" style party game built with React, Vite, Tailwind CSS, Node.js, and Socket.io.
+A real-time multiplayer party card game in the style of Cards Against Humanity, playable in the browser. Create a room, share the invite link, and play with up to 10 friends, or fill the table with computer players that pick and judge cards on their own.
 
-## Prerequisites
+> Contains adult humour. Players must accept an 18+ notice before entering the lobby.
 
-- Node.js (v18 or higher recommended)
-- npm (Node Package Manager)
+## Features
 
-## How to Run Manually
+- **Private rooms:** each game gets a 6-character room code and a one-click invite link that pre-fills the code
+- **Up to 10 players** per room, with live updates for every player through Socket.IO
+- **Full round flow:** a rotating Card Czar, hands topped up to 10 white cards, fill-in-the-blank prompts that ask for one or two answers, and a scoreboard
+- **Offline bots:** add computer players with their own personas (such as *Deadpan Dave* and *Chaos Gremlin*). They score answers with simple humour heuristics, so no API key or network service is needed, and a bot can also be the Czar
+- **Editable deck:** all prompts and answers live in one JSON file
 
-This project consists of two parts: a backend server (`server/`) and a frontend client (root directory). You will need to run **both** for the game to work.
+## Tech stack
 
-### 1. Start the Backend Server
+| Part | Built with |
+| ---- | ---------- |
+| Client | React 19, TypeScript, Vite, Tailwind CSS, Zustand, Socket.IO client |
+| Server | Node.js, Express, Socket.IO |
 
-The backend handles the real-time game state, card shuffling, and player syncing via Socket.io.
+## Getting started
 
-Open a terminal, navigate to the project root, and run:
+Requires Node.js 18 or newer. The game has two parts, and both must be running.
 
-```bash
-cd server
-npm install
-node index.js
+### Quick start (Windows)
+
+Double-click `start-game.bat`. It installs dependencies and opens the server and client in separate windows.
+
+### Manual start
+
+1. Start the server (port `3001`):
+
+   ```bash
+   cd server
+   npm install
+   npm start
+   ```
+
+2. In a second terminal, start the client from the project root:
+
+   ```bash
+   npm install
+   npm run dev
+   ```
+
+3. Open `http://localhost:5173`.
+
+## How to play
+
+1. Accept the 18+ notice and enter your name.
+2. Click **Create New Game**, then share the room code or the **Copy Invite Link** button. Friends can open the link or type the code in the lobby.
+3. Optionally add bots to fill out the table.
+4. The host clicks **START GAME**.
+5. Each round, the Card Czar reveals a black prompt card. Everyone else plays white cards from their hand to complete it.
+6. The Czar picks the funniest answer, and its player scores a point. The Czar role then moves to the next player.
+
+## Customising the cards
+
+Edit `server/cards.json`:
+
+- `blackCards`: objects with `text` (use `_______` for each blank) and `pick` (how many white cards to play, usually 1 or 2)
+- `whiteCards`: an array of answer strings
+
+Restart the server after editing.
+
+## Deploying
+
+The client can be published to GitHub Pages with `npm run deploy`. Host the server anywhere that supports WebSockets, and set `VITE_BACKEND_URL` to its address when building the client (it defaults to `http://localhost:3001`).
+
+## Project structure
+
+```text
+src/
+  components/     Lobby, game board, cards, boot screen, 18+ notice
+  store/          Zustand store and Socket.IO connection
+server/
+  index.js        Rooms, dealing, rounds, scoring and Socket.IO events
+  bot.js          Computer players: personas, card choice and judging
+  cards.json      The deck
+start-game.bat    Starts server and client on Windows
 ```
-*You should see a message saying "Server listening on port 3001". Keep this terminal running.*
-
-### 2. Start the Frontend Client
-
-The frontend is a Vite + React application.
-
-Open a **new, separate terminal** in the project root and run:
-
-```bash
-npm install
-npm run dev
-```
-
-*This will start the Vite development server, usually at `http://localhost:5173/`.*
-
-## How to Play
-
-1. Open your browser and navigate to `http://localhost:5173/`.
-2. **Accept the 18+ Warning** to proceed to the Lobby.
-3. Enter your player name.
-4. **To Create a Game**: Click "Create New Game". Note the 6-character Room Code at the top left, or click the "Copy Invite Link" button to send it to friends.
-5. **To Join a Game**: Your friends can paste the invite link in their browser (which auto-fills the room code), or they can type the Room Code manually in the Lobby.
-6. Once everyone is in, the host clicks **START GAME**.
-7. The game will automatically assign a Card Czar, deal white cards, and keep score!
-
-## Customizing Cards
-
-You can add, edit, or remove cards by editing the `server/cards.json` file. 
-- `blackCards`: Must have a `text` (use `_______` for fill-in-the-blanks) and a `pick` value (usually 1 or 2).
-- `whiteCards`: A simple array of string answers.
